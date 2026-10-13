@@ -1,0 +1,14 @@
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.wide { grid-column: 1 / -1; }
+.req { color: #dc2626; font-style: normal; margin-left: 2px; }
+@media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
+
+.toggle { display: flex; align-items: center; gap: 12px; margin-top: 20px; padding: 14px; border: 1px solid var(--border); border-radius: 12px; cursor: pointer; }
+.toggle input { position: absolute; opacity: 0; pointer-events: none; }
+.track { position: relative; width: 40px; height: 22px; border-radius: 999px; background: #cbd5e1; transition: background 0.15s; flex: none; }
+.track::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); transition: transform 0.15s; }
+.toggle input:checked + .track { background: #16a34a; }
+.toggle input:checked + .track::after { transform: translateX(18px); }
+.toggle input:focus-visible + .track { outline: 2px solid var(--brand-600); outline-offset: 2px; }
+.toggle b { display: block; color: var(--text); }
+.toggle small { color: var(--text-2); }

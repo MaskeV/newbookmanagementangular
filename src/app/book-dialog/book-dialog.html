@@ -1,0 +1,54 @@
+<div class="modal-backdrop" (mousedown)="onBackdrop($event)">
+  <div class="modal" role="dialog" aria-modal="true" [attr.aria-label]="isEdit() ? 'Edit book' : 'Add book'" #dialog>
+    <form ngNativeValidate (ngSubmit)="save()">
+      <div class="modal-head">
+        <span class="modal-icon"><app-icon [name]="isEdit() ? 'pencil' : 'plus'" [size]="20" /></span>
+        <div>
+          <h2>{{ isEdit() ? 'Edit book' : 'Add a new book' }}</h2>
+          <p>{{ isEdit() ? 'Update the details below.' : 'Fill in the details of the book.' }} Fields marked * are required.</p>
+        </div>
+        <button type="button" class="icon-btn" aria-label="Close" (click)="close()"><app-icon name="x" [size]="18" /></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+          @for (f of fields; track f.name) {
+            <label class="field" [class.wide]="f.wide">
+              <span>{{ f.label }}@if (f.required) { <i class="req">*</i> }</span>
+
+              @if (f.name === 'language') {
+                <select class="control" name="language" [required]="!!f.required"
+                  [ngModel]="form().language ?? ''" (ngModelChange)="handleChange(f, $event)">
+                  <option value="">Select language</option>
+                  @for (l of languageChoices(); track l) { <option [value]="l">{{ l }}</option> }
+                </select>
+              } @else if (f.type === 'textarea') {
+                <textarea class="control" rows="3" [name]="f.name"
+                  [ngModel]="form()[f.name]" (ngModelChange)="handleChange(f, $event)"></textarea>
+              } @else {
+                <input class="control" [type]="f.type || 'text'" [name]="f.name" [required]="!!f.required"
+                  [ngModel]="form()[f.name]" (ngModelChange)="handleChange(f, $event)" />
+              }
+            </label>
+          }
+        </div>
+
+        <label class="toggle">
+          <input type="checkbox" name="available" [ngModel]="!!form().available" (ngModelChange)="setAvailable($event)" />
+          <span class="track"></span>
+          <span>
+            <b>Available</b>
+            <small>Show this book as available to borrow</small>
+          </span>
+        </label>
+      </div>
+
+      <div class="modal-foot">
+        <button type="button" class="btn btn-ghost" (click)="close()" [disabled]="saving()">Cancel</button>
+        <button class="btn btn-primary" [disabled]="saving()">
+          @if (saving()) { <span class="spinner"></span> Saving… } @else { {{ isEdit() ? 'Save changes' : 'Add book' }} }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

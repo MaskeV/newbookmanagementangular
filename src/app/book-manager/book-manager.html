@@ -1,0 +1,217 @@
+<section class="container">
+  <div class="page-head">
+    <div>
+      <h1>Books</h1>
+      <p class="sub">
+        @if (store.loaded()) {
+          {{ store.allBooks().length }} {{ store.allBooks().length === 1 ? 'title' : 'titles' }} in your library
+        } @else { Browse and manage your library }
+      </p>
+    </div>
+    @if (canEdit()) {
+      <a class="btn btn-primary" routerLink="/books/new"><app-icon name="plus" [size]="16" /> Add book</a>
+    }
+  </div>
+
+  <!-- Search + filters -->
+  <div class="card toolbar">
+    <div class="search" #searchBox>
+      <form class="search-bar" (ngSubmit)="runSearch(search())">
+        <app-icon name="search" [size]="18" />
+        <input name="search" placeholder="Search by title, author, category…" autocomplete="off"
+          [ngModel]="search()" (ngModelChange)="onSearchInput($event)"
+          (focus)="showSuggestions.set(true)" (keydown)="onSearchKeys($event)" />
+        @if (searching()) { <span class="spinner"></span> }
+        @if (search()) {
+          <button type="button" class="icon-btn" aria-label="Clear search" (click)="clearSearch()"><app-icon name="x" [size]="16" /></button>
+        }
+        <button class="btn btn-primary btn-search">Search</button>
+      </form>
+
+      @if (showSuggestions() && suggestions().length > 0) {
+        <ul class="suggestions">
+          @for (s of suggestions(); track s; let i = $index) {
+            @let p = suggestionParts(s);
+            <li [class.active]="i === activeIndex()" (mouseenter)="activeIndex.set(i)" (click)="runSearch(s)">
+              <app-icon name="search" [size]="15" />
+              <div>{{ p.before }}<span>{{ p.match }}</span><b>{{ p.after }}</b></div>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+    <div class="filters">
+      <label class="field">Category
+        <select class="control" [ngModel]="filters().category" (ngModelChange)="changeFilter('category', $event)">
+          <option value="">All categories</option>
+          @for (v of categories(); track v) { <option [value]="v">{{ v }}</option> }
+        </select>
+      </label>
+      <label class="field">Language
+        <select class="control" [ngModel]="filters().language" (ngModelChange)="changeFilter('language', $event)">
+          <option value="">All languages</option>
+          @for (v of languages(); track v) { <option [value]="v">{{ v }}</option> }
+        </select>
+      </label>
+      <label class="field">Publisher
+        <select class="control" [ngModel]="filters().publisher" (ngModelChange)="changeFilter('publisher', $event)">
+          <option value="">All publishers</option>
+          @for (v of publishers(); track v) { <option [value]="v">{{ v }}</option> }
+        </select>
+      </label>
+      <div class="field">Status
+        <div class="segmented" role="group" aria-label="Status">
+          <button type="button" [class.on]="!filters().available" (click)="changeFilter('available', '')">All</button>
+          <button type="button" [class.on]="filters().available === 'true'" (click)="changeFilter('available', 'true')">Available</button>
+          <button type="button" [class.on]="filters().available === 'false'" (click)="changeFilter('available', 'false')">Unavailable</button>
+        </div>
+      </div>
+    </div>
+
+    @if (chips().length) {
+      <div class="chips">
+        @for (c of chips(); track c.key) {
+          <span class="chip">{{ c.label }}
+            <button type="button" [attr.aria-label]="'Remove filter ' + c.label" (click)="changeFilter(c.key, '')"><app-icon name="x" [size]="12" /></button>
+          </span>
+        }
+        <button type="button" class="link-btn" (click)="clearFilters()">Clear all</button>
+      </div>
+    }
+  </div>
+
+  <!-- Table -->
+  <div class="card table-card">
+    <div class="results-line">
+      <span>
+        <b>{{ sorted().length }}</b> {{ sorted().length === 1 ? 'book' : 'books' }}
+        @if (searchResults() !== null) { for “{{ search().trim() }}” }
+      </span>
+    </div>
+
+    @if (store.failed()) {
+      <div class="empty-state">
+        <span class="empty-icon"><app-icon name="alert" [size]="26" /></span>
+        <h3>Couldn't load the books</h3>
+        <p>Check that the backend is running, then try again.</p>
+        <button type="button" class="btn btn-ghost" (click)="store.load(true)"><app-icon name="refresh" [size]="16" /> Retry</button>
+      </div>
+    } @else {
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="sortable" [attr.aria-sort]="ariaSort('title')" (click)="toggleSort('title')">Book <app-icon [name]="sortIcon('title')" [size]="14" /></th>
+              <th class="sortable" [attr.aria-sort]="ariaSort('category')" (click)="toggleSort('category')">Category <app-icon [name]="sortIcon('category')" [size]="14" /></th>
+              <th class="sortable" [attr.aria-sort]="ariaSort('language')" (click)="toggleSort('language')">Language <app-icon [name]="sortIcon('language')" [size]="14" /></th>
+              <th class="sortable num" [attr.aria-sort]="ariaSort('publicationYear')" (click)="toggleSort('publicationYear')">Year <app-icon [name]="sortIcon('publicationYear')" [size]="14" /></th>
+              <th class="sortable num" [attr.aria-sort]="ariaSort('quantity')" (click)="toggleSort('quantity')">Qty <app-icon [name]="sortIcon('quantity')" [size]="14" /></th>
+              <th class="sortable" [attr.aria-sort]="ariaSort('available')" (click)="toggleSort('available')">Status <app-icon [name]="sortIcon('available')" [size]="14" /></th>
+              <th>Description</th>
+              @if (canEdit()) { <th class="actions-col">Actions</th> }
+            </tr>
+          </thead>
+          <tbody>
+            @if (isLoading()) {
+              @for (n of skeletonRows; track n) {
+                <tr class="sk-row">
+                  <td><div class="skeleton wide"></div></td>
+                  <td><div class="skeleton"></div></td><td><div class="skeleton"></div></td>
+                  <td><div class="skeleton short"></div></td><td><div class="skeleton short"></div></td>
+                  <td><div class="skeleton"></div></td><td><div class="skeleton wide"></div></td>
+                  @if (canEdit()) { <td><div class="skeleton"></div></td> }
+                </tr>
+              }
+            } @else {
+              @for (book of pageRows(); track book.id) {
+                <tr>
+                  <td>
+                    <div class="book">
+                      <span class="cover" [style]="tagStyle(book.title)">{{ (book.title || '?').charAt(0).toUpperCase() }}</span>
+                      <div class="book-text">
+                        <div class="book-title">{{ book.title }}</div>
+                        <div class="book-sub">{{ book.author }}@if (book.publisher) { · {{ book.publisher }} }</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="tag" [style]="tagStyle(book.category)">{{ book.category }}</span></td>
+                  <td>{{ book.language }}</td>
+                  <td class="num">{{ book.publicationYear }}</td>
+                  <td class="num">{{ book.quantity }}</td>
+                  <td>
+                    <span class="badge" [class.badge-success]="book.available" [class.badge-danger]="!book.available">
+                      {{ book.available ? 'Available' : 'Not available' }}
+                    </span>
+                  </td>
+                  <td class="desc" [title]="book.description ?? ''">{{ book.description }}</td>
+                  @if (canEdit()) {
+                    <td class="actions-col">
+                      <a class="icon-btn" [routerLink]="['/books', book.id, 'edit']" title="Edit" aria-label="Edit book"><app-icon name="pencil" [size]="16" /></a>
+                      <button type="button" class="icon-btn danger" title="Delete" aria-label="Delete book" (click)="deleteTarget.set(book)"><app-icon name="trash" [size]="16" /></button>
+                    </td>
+                  }
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (!isLoading() && sorted().length === 0) {
+        <div class="empty-state">
+          <span class="empty-icon"><app-icon name="book" [size]="26" /></span>
+          @if (store.allBooks().length === 0) {
+            <h3>Your library is empty</h3>
+            <p>Add your first book to get started.</p>
+            @if (canEdit()) { <a class="btn btn-primary" routerLink="/books/new"><app-icon name="plus" [size]="16" /> Add book</a> }
+          } @else {
+            <h3>No books match your search</h3>
+            <p>Try a different search or remove some filters.</p>
+            @if (hasFilters()) { <button type="button" class="btn btn-ghost" (click)="clearFilters()">Clear filters</button> }
+          }
+        </div>
+      }
+
+      @if (sorted().length > 0) {
+        <div class="pager">
+          <span>Showing {{ rangeStart() }}–{{ rangeEnd() }} of {{ sorted().length }}</span>
+          <div class="pager-controls">
+            <label class="per-page">Rows
+              <select class="control" [ngModel]="pageSize()" (ngModelChange)="changePageSize($event)">
+                @for (s of pageSizes; track s) { <option [ngValue]="s">{{ s }}</option> }
+              </select>
+            </label>
+            <button type="button" class="icon-btn" aria-label="Previous page" [disabled]="currentPage() === 1" (click)="goTo(currentPage() - 1)"><app-icon name="chevronLeft" [size]="18" /></button>
+            <span>Page {{ currentPage() }} of {{ totalPages() }}</span>
+            <button type="button" class="icon-btn" aria-label="Next page" [disabled]="currentPage() === totalPages()" (click)="goTo(currentPage() + 1)"><app-icon name="chevronRight" [size]="18" /></button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</section>
+
+<!-- delete confirmation popup -->
+@if (deleteTarget(); as book) {
+  <div class="modal-backdrop" (mousedown)="$event.target === $event.currentTarget && !deleting() && deleteTarget.set(null)">
+    <div class="modal sm" role="alertdialog" aria-modal="true" aria-label="Delete book">
+      <div class="modal-head">
+        <span class="modal-icon danger"><app-icon name="trash" [size]="20" /></span>
+        <div>
+          <h2>Delete this book?</h2>
+          <p><b>{{ book.title }}</b> will be removed permanently.</p>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-ghost" [disabled]="deleting()" (click)="deleteTarget.set(null)">Cancel</button>
+        <button type="button" class="btn btn-danger" [disabled]="deleting()" (click)="confirmDelete()">
+          @if (deleting()) { <span class="spinner"></span> Deleting… } @else { Delete }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- add / edit popup renders here (/books/new and /books/:id/edit) -->
+<router-outlet />

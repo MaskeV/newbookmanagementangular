@@ -1,0 +1,100 @@
+<section class="container">
+  <div class="page-head">
+    <div>
+      <h1>{{ greeting() }}, {{ firstName() }}</h1>
+      <p class="sub">Here's an overview of your library.</p>
+    </div>
+    <div class="head-actions">
+      <a class="btn btn-ghost" routerLink="/books"><app-icon name="library" [size]="16" /> Browse books</a>
+      @if (canEdit()) {
+        <a class="btn btn-primary" routerLink="/books/new"><app-icon name="plus" [size]="16" /> Add book</a>
+      }
+    </div>
+  </div>
+
+  @if (store.failed()) {
+    <div class="card empty-state">
+      <span class="empty-icon"><app-icon name="alert" [size]="26" /></span>
+      <h3>Couldn't load your library</h3>
+      <p>Check that the backend is running, then try again.</p>
+      <button type="button" class="btn btn-ghost" (click)="store.load(true)"><app-icon name="refresh" [size]="16" /> Retry</button>
+    </div>
+  } @else {
+    <div class="stats">
+      <article class="card stat">
+        <span class="stat-icon brand"><app-icon name="library" [size]="22" /></span>
+        <div>
+          <p class="stat-label">Total titles</p>
+          <p class="stat-value" [class.skeleton]="!ready()">{{ stats().titles }}</p>
+          <p class="stat-sub">across {{ stats().categories }} categories</p>
+        </div>
+      </article>
+      <article class="card stat">
+        <span class="stat-icon info"><app-icon name="layers" [size]="22" /></span>
+        <div>
+          <p class="stat-label">Total copies</p>
+          <p class="stat-value" [class.skeleton]="!ready()">{{ stats().copies }}</p>
+          <p class="stat-sub">in {{ stats().languages }} languages</p>
+        </div>
+      </article>
+      <article class="card stat">
+        <span class="stat-icon success"><app-icon name="checkCircle" [size]="22" /></span>
+        <div>
+          <p class="stat-label">Available</p>
+          <p class="stat-value" [class.skeleton]="!ready()">{{ stats().available }}</p>
+          <p class="stat-sub">{{ stats().availablePct }}% of titles</p>
+        </div>
+      </article>
+      <article class="card stat">
+        <span class="stat-icon danger"><app-icon name="ban" [size]="22" /></span>
+        <div>
+          <p class="stat-label">Not available</p>
+          <p class="stat-value" [class.skeleton]="!ready()">{{ stats().unavailable }}</p>
+          <p class="stat-sub">{{ stats().unavailablePct }}% of titles</p>
+        </div>
+      </article>
+    </div>
+
+    <div class="panels">
+      <section class="card panel">
+        <h2>Books by category</h2>
+        <ng-container *ngTemplateOutlet="bars; context: { $implicit: byCategory(), color: 'var(--brand-600)' }" />
+      </section>
+
+      <section class="card panel">
+        <h2>Books by language</h2>
+        <ng-container *ngTemplateOutlet="bars; context: { $implicit: byLanguage(), color: '#0e7490' }" />
+      </section>
+
+      <section class="card panel recent">
+        <div class="panel-head">
+          <h2>Recently added</h2>
+          <a routerLink="/books" class="link">View all</a>
+        </div>
+        @for (book of recent(); track book.id) {
+          <div class="recent-item">
+            <span class="cover" [style]="tagStyle(book.title)">{{ (book.title || '?').charAt(0).toUpperCase() }}</span>
+            <div class="grow">
+              <p class="r-title">{{ book.title }}</p>
+              <p class="r-sub">{{ book.author }}</p>
+            </div>
+            <span class="tag" [style]="tagStyle(book.category)">{{ book.category }}</span>
+          </div>
+        } @empty {
+          <p class="muted">{{ ready() ? 'No books yet.' : 'Loading…' }}</p>
+        }
+      </section>
+    </div>
+  }
+</section>
+
+<ng-template #bars let-items let-color="color">
+  @for (b of items; track b.label) {
+    <div class="bar-row">
+      <div class="bar-top"><span>{{ b.label }}</span><b>{{ b.count }}</b></div>
+      <div class="bar-track"><div class="bar-fill" [style.width.%]="b.width" [style.background]="color"></div></div>
+    </div>
+  } @empty {
+    <p class="muted">{{ ready() ? 'Nothing to show yet.' : 'Loading…' }}</p>
+  }
+</ng-template>

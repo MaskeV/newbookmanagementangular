@@ -1,0 +1,81 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <h1>Book Management</h1>
+      <p>{{ isSignup() ? 'Create an account to manage your library.' : 'Log in to manage your library.' }}</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button type="button" [class.on]="!isSignup()" (click)="switchMode('login')">Log in</button>
+      <button type="button" [class.on]="isSignup()" (click)="switchMode('signup')">Sign up</button>
+    </div>
+
+    <!-- ngNativeValidate keeps the browser's required / email checks, like the React form -->
+    <form ngNativeValidate (ngSubmit)="submit()">
+      @if (isSignup()) {
+        <label>
+          Full name
+          <input required name="name" [ngModel]="form().name" (ngModelChange)="change('name', $event)" />
+        </label>
+      }
+
+      <label>
+        Email
+        <input
+          required
+          type="email"
+          name="email"
+          autocomplete="email"
+          [ngModel]="form().email"
+          (ngModelChange)="change('email', $event)"
+        />
+      </label>
+
+      <label>
+        Password
+        <div class="pw">
+          <input
+            required
+            name="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            [attr.autocomplete]="isSignup() ? 'new-password' : 'current-password'"
+            [ngModel]="form().password"
+            (ngModelChange)="change('password', $event)"
+          />
+          <button type="button" (click)="showPassword.set(!showPassword())">
+            {{ showPassword() ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+      </label>
+
+      @if (isSignup()) {
+        <label>
+          Confirm password
+          <input
+            required
+            name="confirm"
+            [type]="showPassword() ? 'text' : 'password'"
+            autocomplete="new-password"
+            [ngModel]="form().confirm"
+            (ngModelChange)="change('confirm', $event)"
+          />
+        </label>
+      }
+
+      @if (error()) {
+        <div class="msg error">{{ error() }}</div>
+      }
+
+      <button class="submit" [disabled]="loading()">
+        {{ loading() ? 'Please wait...' : isSignup() ? 'Create account' : 'Log in' }}
+      </button>
+    </form>
+
+    <p class="switch">
+      {{ isSignup() ? 'Already have an account? ' : 'New here? ' }}
+      <button type="button" (click)="switchMode(isSignup() ? 'login' : 'signup')">
+        {{ isSignup() ? 'Log in' : 'Create an account' }}
+      </button>
+    </p>
+  </div>
+</div>

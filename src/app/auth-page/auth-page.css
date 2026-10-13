@@ -1,0 +1,29 @@
+:host { display: block; }
+.auth-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box;
+  background: linear-gradient(135deg, #4338ca, #0e7490); font-family: system-ui, Segoe UI, sans-serif; }
+.auth-card { width: 100%; max-width: 400px; background: #fff; border-radius: 16px; padding: 28px; box-shadow: 0 20px 50px rgba(15, 23, 42, .3); }
+.auth-brand h1 { margin: 0; font-size: 24px; color: #4338ca; }
+.auth-brand p { margin: 6px 0 18px; color: #64748b; font-size: 14px; }
+
+.auth-tabs { display: flex; background: #f1f5f9; border-radius: 10px; padding: 4px; margin-bottom: 18px; }
+.auth-tabs button { flex: 1; border: none; background: none; padding: 9px; border-radius: 8px; font-weight: 600; color: #64748b; cursor: pointer; }
+.auth-tabs button.on { background: #fff; color: #4338ca; box-shadow: 0 1px 4px rgba(15, 23, 42, .12); }
+
+.auth-card label { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; font-size: 13px; font-weight: 600; color: #475569; }
+.auth-card input { padding: 11px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; color: #1e293b; width: 100%; box-sizing: border-box; }
+.auth-card input:focus { outline: none; border-color: #4338ca; box-shadow: 0 0 0 3px rgba(67, 56, 202, .15); }
+
+.pw { position: relative; }
+.pw input { padding-right: 62px; }
+.pw button { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: none; background: none; color: #4338ca; font-weight: 600; cursor: pointer; padding: 6px 8px; }
+
+.msg { padding: 10px 12px; border-radius: 8px; font-size: 14px; margin-bottom: 14px; }
+.msg.error { background: #fee2e2; color: #b91c1c; }
+.msg.ok { background: #dcfce7; color: #15803d; }
+
+.submit { width: 100%; border: none; border-radius: 8px; padding: 12px; background: #4338ca; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; }
+.submit:hover { background: #3730a3; }
+.submit:disabled { background: #a5b4fc; cursor: not-allowed; }
+
+.switch { text-align: center; margin: 16px 0 0; font-size: 14px; color: #64748b; }
+.switch button { border: none; background: none; color: #4338ca; font-weight: 600; cursor: pointer; padding: 0; }

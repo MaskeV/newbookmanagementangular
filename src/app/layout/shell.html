@@ -1,0 +1,56 @@
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" routerLink="/dashboard" aria-label="Book Management home">
+      <span class="logo"><app-icon name="book" [size]="20" /></span>
+      <span class="brand-name">Book Management</span>
+    </a>
+
+    <nav class="links" aria-label="Main">
+      <a routerLink="/dashboard" routerLinkActive="active">
+        <app-icon name="dashboard" [size]="18" /><span>Dashboard</span>
+      </a>
+      <a routerLink="/books" routerLinkActive="active">
+        <app-icon name="library" [size]="18" /><span>Books</span>
+      </a>
+    </nav>
+
+    <div class="actions">
+      @if (isAdmin()) {
+        <a class="btn btn-primary" routerLink="/books/new">
+          <app-icon name="plus" [size]="16" /><span class="add-label">Add book</span>
+        </a>
+      }
+
+      <div class="user-menu" #menu>
+        <button type="button" class="user-btn" (click)="menuOpen.set(!menuOpen())"
+          [attr.aria-expanded]="menuOpen()" aria-haspopup="true">
+          <span class="avatar">{{ initials() }}</span>
+          <span class="user-name">{{ displayName() }}</span>
+          <app-icon name="chevronDown" [size]="16" />
+        </button>
+
+        @if (menuOpen()) {
+          <div class="dropdown" role="menu">
+            <div class="dropdown-head">
+              <span class="avatar lg">{{ initials() }}</span>
+              <div>
+                <p class="dd-name">{{ displayName() }}</p>
+                @if (user()?.email) { <p class="dd-email">{{ user()?.email }}</p> }
+              </div>
+            </div>
+            @if (user()?.role) {
+              <p class="dd-role"><span class="role-pill" [class.admin]="isAdmin()">{{ user()?.role }}</span></p>
+            }
+            <button type="button" class="dd-item" role="menuitem" (click)="logout()">
+              <app-icon name="logout" [size]="16" /> Log out
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <router-outlet />
+</main>
